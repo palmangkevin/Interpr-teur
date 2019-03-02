@@ -1,0 +1,149 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+
+\title{Travail pratique \#1 - IFT-2035}
+\author{Abdramane Diasso et Kevin KOMBATE }
+
+\begin{document}
+
+\maketitle
+
+\newpage
+
+%% ¡¡ REMPLIR ICI !!
+\textbf{Découverte}
+
+Le TP1 comptant pour 23 % de la note final du cours avait pour but de 
+
+renforcer notre compréhension du langage Haskell tout en implémentant  le code partiel fournie comme ressources d’appui.
+
+Ainsi donc nous avons commencé par une revue documentaire sur internet et les note du cours dans le but de mieux comprendre la syntaxe, le champ sémantique et certaines librairies utilisées par Haskell.                                                                                         Il est connu que Haskell est un langage de programmation fonctionnel pur. Dans ce langage impératif, l'on effectue des opérations ou instruction en donnant à l’ordinateur une séquence de tâches, et il les exécute. Lors de cette exécution, il peut les méthodes peuvent changer d’état.
+
+Nous allons structurer notre rapport de la façon suivante:
+
+D'abord commencer par fournir les remarques a la lecture du code , les problèmes rencontrées a l'implémentation, les choix opères et une conclusion.
+
+ 
+
+textbf{Detail du code } 
+
+Bref pour mieux aborder notre travail pratique nous avons commencé  par une lecture minutieuse de l'énoncé afin de bien comprendre 
+
+le langage lexical utilise et le code .
+
+Ainsi nous avons effectué des constructions en utilisant la variable abstraite Sexp . Ceci nous a permis de comprendre comment chaque 
+
+expression représentées par Sexp.
+
+Le constant est que pour la procédure de construction prend en entrée l’expression Scons comme fonction sur chaque terme minimal ( Matérialiser par une parenthèse ouvrante). Aussi Snil qui est la liste vide est appeler a chaque fois que nous fermons une parenthèse c'est 'a dire si l'expression prend fin.
+
+L'implémentation de certaines structures a demandé des ajout de nos propres fonctions dans le but de résoudre certaines difficultés spécifiques d'implémentation.
+
+ 
+
+Textbf {exploits réalises pendant l'implémentation}
+
+ 
+
+la construction d'une liste vide s2l a été faite aisément  sans difficulté dans la représentation intermédiaire.
+
+L’implémentation de Lcase et du Lhastype ont été réalisé après plusieurs erreurs syntaxiques à la compilation. Le fait reçurent est que la plupart de la construction de nos types Sexp avec Scons révèle une non satisfaction du nombre de paramètre dans le constructeur. Aussi des paramètres hors de portés ont été notés.  Pour implémenter Lcase nous avons défini un type de données intermédiaire qui prend un Sexp en paramètre pour renvoyer un Ltype. Cette constructeur appelé readType prend associe à chaque valeur du Ltype un Sexp correspondant. Pendant l’implémentation de cette structure, des erreurs de parsing ont été fréquentes dû la plupart du temp à des problèmes d’indentation essentiel dans haskell ; chose que nous avons vite fait de maitriser.
+
+Dans readType  étant donnée que le Type String n’est pas défini pour LType, une erreur est vite signalé au cas où il recevait cet type de données en paramètre.
+
+ 
+
+Dans la partie vérification des types , l’implémentation de la structure check a été vite compris . En effet en utilisant la structure de infer  nous avons à chaque fois vérifier la validité des données construites et retourner True si oui. Ceci etant nous avons remarquer la présence de plusieurs Warning dans cette partie du code .
+
+Les constructeurs implementes pour cette partie 
+
+\begin{itemize}  
+\item Lnum Int 
+\item Lvar Var
+\item Lhastype Lexp Ltype
+\item Lfun Var Lexp
+\item Lcall Lexp Lexp
+\item Lnil
+\item Lcons Lexp Lexp
+ \item Lcase Lexp Var Var Lexp Lexp
+\item Lletrec [(Var, Maybe Ltype, Lexp)] Lexp deriving (Show, Eq)
+\end{itemize}
+Textbf {problèmes rencontrés}
+
+ 
+
+ Au cours de l'implémentation de la représentation intermédiaire nous avons nous rencontre des difficultés pour lier les variables du type Lexp 'a' Sexp. Soit il y avait une erreur de parsing ou bien les type sont inconnus. 
+
+ Pour cela nous avons définir nos types de données sfoldel pour manipuler les listes. Aussi  nous avons créé une fonction intermédiaire pour décongestionner les  expression en faisant fit du sucre syntaxique notamment celles débutant avec "let". 
+
+ L'implémentation du Lletrec nous a causé d'énormes difficultés. Une erreur de parsing faisant suspecte l'oublie d'un "let" nous a été chaque fois signale lors de la compilation. Malgré que nous ayons pris en compte l’ajout Maybe Ltype dans notre tuple.
+
+Détail de l’implémentation de Lltrec : Évidement nous avons à part défini un type de donné qui prend en paramètre un Sexp et nous revoie un type Maybe LType.
+
+Cette structure que nous avons nommée readMaybeLType renvoi un Just (readType). Bien que ce bout de code de readMaybeLType n’étant pas long , il nous a fallu beaucoup de lecture pour déterminer le meilleur type à définir. En effet nous avions penser passer par un environnement intermédiaire pour appeler cette fonction et pire malheureusement nous avons même penser au monad !!!!!! ; et pourtant la solution était tout simple. Les nombreuses erreurs que nous avions rencontrées dans cette partie était finalement dût à la non prise en compte de certaine structure de Sexp dans l’implémentation de readLType. En effet Snil et Ssym avaient été omis. Erreurs corrigées en construisant les données correspondantes.
+
+Pour la liste de tuple nous avons utilisé un binding pour associé une variable à une liste de tuple. Un sfoldl   a été implémenter pour la définition des opérations sur les listes. Il faut avouer que cette partie du code était véritablement un gros serpent de mer qui nous a fallu des lectures et un compréhension des structures pendant 48 h.
+
+Nous avons du passer les sfoldel et les slist dans les smap pour capter les structures. Ensuite nous avons utiliser une fonction auxilliare bindParser pour dessucrer les formes let . Cette dernière servira à son tour à maper pour dans une définition de parseFinalBinds afin de lier la viable à la slist.
+
+Nous avons remarqué des Warning à la compilation du code concernant cette partie . En effet les structure que nous avons définit et qui ne sont pas utilisées dans les fdoldel et le smap sont signalées en Warning. Nous étions embarrasser parce qu’ en les supprimant le même problème est signalé. Finalement nous avons option la suppression pour alléger au moins le code.
+
+Nous avons rencontré d’énormes difficultés dans l’implémentation de la partie vérification des types. En effet nous pensons à une structure de donnée intermédiaire qui doit nous permettre à travers l’environnement de constructoire LType. Mainte fois essayé la syntaxe nous a été échappé et vraiment très malgré de nombreuse nos nombreuses lectures du cours et de la documentation sur internet. Nous avons essayé avec la librairie lookup aussi sans aucun succès.
+
+Aussi nous avons introduit les casee et malheureusement aucun resultat.
+
+Au final nous avons pensé utiliser infer lui-même. La logique nous parrait embiguèe  cependant même si notre code compile parfaitement .
+
+Outre cela de nombreuses Warning sont perçues à la compilation.
+
+Finalement nous avons compris que le code emet un avertissement si le GHC ne peut pas spécialialement surchargé une fonction,  et généralement parce que la fonction nécessite un fragment non trouvé à la compilation . Le rapports  est alrs lorsque la situation survient lors de la spécialisation d'une fonction importée. Ce formulaire est destiné à détecter les cas où une fonction importée marquée comme introuvable (probablement pour permettre la spécialisation) ne peut pas être spécialisée car elle appelle d'autres fonctions qui ne sont pas spécialisées.
+
+ Ceci concerne infer.
+
+Pour la structure check là nous sommes vraiment certains de nos exploits dans l’implémentation de cette partie du code . En effet à chaque fois nous sommes aller chercher le  constructeur de la structure LEXP pour finalement vérifier sa présence. 
+Ce fut une bonne ocasion de comprendre la portée avec let ...in et les environnement des variables. Aprée erreures syntaxique  et lexicales natament la redefinition des varaibles , l'indentation , finalement nous sommes parvenu a bien compiler cette partie du code.
+
+Resumé de l'implementation:
+\begin{itemize}  
+\item check (Lnum ) entier 
+\item check tenv (Lvar v)  
+\item check tenv (Lhastype e ) dic 
+\item check tenv (Lfun  e) fcann 
+\item check tenv (Lcall e ) app 
+\item check tenv (Lcons e ) conslis 
+\item check tenv (Lnil) lv = let t' 
+\item check tenv (Lcase e ) lcas 
+\item check tenv (Lletrec e )  letrec 
+\end{itemize}
+
+l'implementattion de l'évaluateur a ete faite selon la construction des donnes ci- dessous. 
+Le constructeur Lltrec utilisant un tuple dans une liste a été la plus grosse difficulté.
+En effet il nous a fallu utiliser lookup dans un environnement nouveau pour resoudre le probéme de 
+concordance des donnée.
+Pour le reste nous avons passé en paramétre du constructeur une variable quelconque si la présion de celle
+n'était pas nécessaire.
+Ainsi donc tour à tours nous avons implémenter :
+
+\begin{itemize}  
+\item Lnum Int 
+\item Lvar Var
+\item Lhastype Lexp Ltype
+\item Lfun Var Lexp
+\item Lcall Lexp Lexp
+\item Lnil
+\item Lcons Lexp Lexp
+ \item Lcase Lexp Var Var Lexp Lexp
+\item Lletrec [(Var, Maybe Ltype, Lexp)] Lexp deriving (Show, Eq)
+\end{itemize}
+
+\newpage
+ Textbf {Conclusion }
+L’implémentation lisp.hs a étant notre véritables première expérience avec les langage fonctionnelles notamment haskell. Ceci sous-entend que les résultats attendu pour cet travail étaient un véritables défit pour nous personnellement afin de mieux comprendre ce concept de la programmation et mieux parfaire notre logique dans la compréhension de nos choix structurels dans d’autres langages orienté objet par exemple Les notions de portés des variables ont été touchés du doigts aussi nous avons expérimenté l’implémentation  des foldel qui offrent une logique de traitement sur les listes comparables au reduce sur les tableau en javascript.
+La semantique statique nous a été d'une grande utilité notament pour les interference et la vérification
+Bien plus de sturctures que nous avons exploré  dans notre révue documenetaire pour parvenir au choix de la librairie ou la structure adequate 
+que nous devons implementé afin de resoudre nos probléme . Ceci nous a fait beaucoup de connaissance sur Haskell .
+Pour finir nous saluons cette belle expérience de la programmation meme si cela a été peu douloureuse eu egard au grand effort que nous avons
+fourni en peu de temps pour accomplir ces résultant bien satisfaisant. 
+
+\end{document}
